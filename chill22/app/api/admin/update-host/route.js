@@ -1,7 +1,12 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../lib/supabase-admin';
+import { requireAdmin } from '../../../../lib/require-admin';
 
 export async function POST(request) {
+  // Admin-only: this rewrites the host every client dashboard shows.
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   try {
     const body = await request.json();
     const { baseHostUrl, portalUrl } = body;

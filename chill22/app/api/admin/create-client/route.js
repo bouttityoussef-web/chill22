@@ -1,14 +1,20 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../lib/supabase-admin';
-import { createM3ULine } from '../../../../lib/xtream';
+import { createM3ULine, SUBSCRIPTION_PACK } from '../../../../lib/xtream';
 import { sendCredentialsEmail } from '../../../../lib/email';
+import { requireAdmin } from '../../../../lib/require-admin';
 
 export const runtime = 'nodejs';
 
 export async function POST(request) {
+  // Admin-only: nothing below runs without a valid admin session.
+  const denied = await requireAdmin();
+  if (denied) return denied;
+
   try {
     const body = await request.json();
-    const { fullName, email, pack = 152, sub = 12, note, country } = body;
+    // The pack is fixed (SUBSCRIPTION_PACK); any `pack` sent by the client is ignored.
+    const { fullName, email, sub = 12, note, country } = body;
 
     if (!email) {
       return NextResponse.json({ error: 'email is required' }, { status: 400 });
@@ -17,7 +23,7 @@ export async function POST(request) {
     const supabase = createAdminClient();
 
     // 1. Create M3U line on new panel
-    const line = await createM3ULine({ pack, sub, note, country });
+    const line = await createM3ULine({ pack: SUBSCRIPTION_PACK, sub, note, country });
 
     // 2. Create Supabase Auth user
     const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
@@ -55,7 +61,7 @@ export async function POST(request) {
       username: line.username,
       password: line.password,
       m3u_url: line.m3uUrl,
-      package_id: String(pack),
+      package_id: String(SUBSCRIPTION_PACK),
       status: 'active',
     });
 

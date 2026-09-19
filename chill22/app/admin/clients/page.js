@@ -7,7 +7,7 @@ export default function ClientsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [showAdd, setShowAdd] = useState(false);
-  const [form, setForm] = useState({ fullName: '', email: '', packageId: '16', note: '', country: '' });
+  const [form, setForm] = useState({ fullName: '', email: '', note: '', country: '' });
   const [creating, setCreating] = useState(false);
   const [result, setResult] = useState(null);
 
@@ -23,11 +23,11 @@ export default function ClientsPage() {
   async function handleCreate(e) {
     e.preventDefault();
     setCreating(true); setResult(null);
-    const res = await fetch('/api/admin/create-client', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fullName: form.fullName, email: form.email, pack: form.packageId, note: form.note, country: form.country }) });
+    const res = await fetch('/api/admin/create-client', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fullName: form.fullName, email: form.email, note: form.note, country: form.country }) });
     const data = await res.json();
     setCreating(false);
     if (data.error) { setResult({ ok: false, msg: data.error }); }
-    else { setResult({ ok: true, msg: `✅ Created: ${data.username}` }); setShowAdd(false); setForm({ fullName:'', email:'', packageId:'16', note:'', country:'' }); loadClients(); }
+    else { setResult({ ok: true, msg: `✅ Created: ${data.username}` }); setShowAdd(false); setForm({ fullName:'', email:'', note:'', country:'' }); loadClients(); }
   }
 
   const filtered = clients.filter(c => !search || c.email?.toLowerCase().includes(search.toLowerCase()) || c.full_name?.toLowerCase().includes(search.toLowerCase()));
@@ -50,7 +50,6 @@ export default function ClientsPage() {
           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input placeholder="Full Name" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} />
             <input placeholder="Email *" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
-            <input placeholder="Package ID (default: 16)" value={form.packageId} onChange={e => setForm({...form, packageId: e.target.value})} />
             <input placeholder="Country code (e.g. MA)" value={form.country} onChange={e => setForm({...form, country: e.target.value})} />
             <input placeholder="Note (optional)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} className="col-span-full" />
           </div>
