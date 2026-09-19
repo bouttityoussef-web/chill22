@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../lib/supabase-admin';
-import { createM3ULine, SUBSCRIPTION_PACK } from '../../../../lib/xtream';
+import { createM3ULine, SUBSCRIPTION_PACK, SUB_BY_MONTHS } from '../../../../lib/xtream';
 import { sendCredentialsEmail } from '../../../../lib/email';
 import { requireAdmin } from '../../../../lib/require-admin';
 
@@ -14,16 +14,19 @@ export async function POST(request) {
   try {
     const body = await request.json();
     // The pack is fixed (SUBSCRIPTION_PACK); any `pack` sent by the client is ignored.
-    const { fullName, email, sub = 12, note, country } = body;
+    const { fullName, email, months = 12, note, country } = body;
 
     if (!email) {
       return NextResponse.json({ error: 'email is required' }, { status: 400 });
+    }
+    if (!Object.hasOwn(SUB_BY_MONTHS, months)) {
+      return NextResponse.json({ error: 'months must be 1, 3, 6 or 12' }, { status: 400 });
     }
 
     const supabase = createAdminClient();
 
     // 1. Create M3U line on new panel
-    const line = await createM3ULine({ pack: SUBSCRIPTION_PACK, sub, note, country });
+    const line = await createM3ULine({ months: Number(months), pack: SUBSCRIPTION_PACK, note, country });
 
     // 2. Create Supabase Auth user
     const tempPassword = Math.random().toString(36).slice(-10) + 'A1!';
