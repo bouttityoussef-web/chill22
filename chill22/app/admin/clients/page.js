@@ -34,27 +34,27 @@ export default function ClientsPage() {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
+      <div className="gap-3" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 24 }}>
         <div>
           <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>Clients</h1>
           <p style={{ color: 'var(--muted)', fontSize: 13 }}>{clients.length} total clients</p>
         </div>
-        <button onClick={() => setShowAdd(!showAdd)} style={{ background: 'var(--accent)', color: '#000', fontWeight: 700, padding: '10px 18px', borderRadius: 'var(--radius)' }}>
+        <button onClick={() => setShowAdd(!showAdd)} className="shrink-0" style={{ background: 'var(--accent)', color: '#000', fontWeight: 700, padding: '10px 18px', borderRadius: 'var(--radius)' }}>
           + New Client
         </button>
       </div>
 
       {showAdd && (
-        <div style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 24, marginBottom: 24 }}>
+        <div className="p-4 sm:p-6" style={{ background: 'var(--surface)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', marginBottom: 24 }}>
           <h3 style={{ marginBottom: 16, fontSize: 15 }}>Add New Client</h3>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input placeholder="Full Name" value={form.fullName} onChange={e => setForm({...form, fullName: e.target.value})} />
             <input placeholder="Email *" required value={form.email} onChange={e => setForm({...form, email: e.target.value})} />
             <input placeholder="Package ID (default: 16)" value={form.packageId} onChange={e => setForm({...form, packageId: e.target.value})} />
             <input placeholder="Country code (e.g. MA)" value={form.country} onChange={e => setForm({...form, country: e.target.value})} />
-            <input placeholder="Note (optional)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} style={{ gridColumn: '1/-1' }} />
+            <input placeholder="Note (optional)" value={form.note} onChange={e => setForm({...form, note: e.target.value})} className="col-span-full" />
           </div>
-          <div style={{ display: 'flex', gap: 10, marginTop: 14 }}>
+          <div className="flex-wrap" style={{ display: 'flex', gap: 10, marginTop: 14 }}>
             <button onClick={handleCreate} disabled={creating || !form.email} style={{ background: 'var(--accent)', color: '#000', fontWeight: 700, padding: '10px 20px', borderRadius: 'var(--radius)' }}>
               {creating ? 'Creating…' : 'Create & Send Email'}
             </button>
@@ -69,7 +69,8 @@ export default function ClientsPage() {
           <input placeholder="Search by name or email…" value={search} onChange={e => setSearch(e.target.value)} style={{ maxWidth: 320 }} />
         </div>
         {loading ? <div style={{ padding: 32, color: 'var(--muted)', textAlign: 'center' }}>Loading…</div> : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="overflow-x-auto">
+          <table className="min-w-[600px]" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--surface2)' }}>
                 {['Client', 'Username', 'Status', 'Expiry', 'Package'].map(h => (
@@ -102,6 +103,7 @@ export default function ClientsPage() {
               {filtered.length === 0 && <tr><td colSpan={5} style={{ padding: 32, textAlign: 'center', color: 'var(--muted)' }}>No clients found</td></tr>}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

@@ -58,21 +58,21 @@ export default function PnLPage() {
       </div>
 
       {/* Summary cards */}
-      <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr 1fr', gap:16, marginBottom:32 }}>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4" style={{ marginBottom:32 }}>
         {[
           { label:'Revenue', value: revenue, color:'var(--accent2)' },
           { label:'Total Expenses', value: totalExpenses, color:'var(--danger)' },
           { label:'Net Profit', value: profit, color: profit>=0?'var(--accent)':'var(--danger)' },
         ].map(({ label, value, color }) => (
-          <div key={label} style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', padding:20 }}>
+          <div key={label} className="min-w-0 p-4 sm:p-5" style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)' }}>
             <div style={{ fontSize:11, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.06em', marginBottom:8 }}>{label}</div>
-            <div style={{ fontSize:28, fontWeight:700, color }}>${value.toFixed(2)}</div>
+            <div className="break-words text-2xl sm:text-[28px]" style={{ fontWeight:700, color }}>${value.toFixed(2)}</div>
           </div>
         ))}
       </div>
 
       {/* Progress bar */}
-      <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', padding:24, marginBottom:24 }}>
+      <div className="p-4 sm:p-6" style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', marginBottom:24 }}>
         <div style={{ display:'flex', justifyContent:'space-between', marginBottom:10 }}>
           <span style={{ fontSize:13, fontWeight:600 }}>Profit Margin</span>
           <span style={{ fontSize:13, color:'var(--muted)' }}>{revenue > 0 ? ((profit/revenue)*100).toFixed(1) : 0}%</span>
@@ -83,13 +83,13 @@ export default function PnLPage() {
       </div>
 
       {/* Expenses */}
-      <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', padding:24 }}>
+      <div className="p-4 sm:p-6" style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)' }}>
         <h3 style={{ fontSize:15, fontWeight:600, marginBottom:16 }}>Expenses</h3>
         <div style={{ display:'flex', flexDirection:'column', gap:10 }}>
           {expenses.map((e, i) => (
             <div key={i} style={{ display:'flex', gap:10, alignItems:'center' }}>
-              <input value={e.label} onChange={ev => setExpenses(prev => prev.map((x,xi) => xi===i?{...x,label:ev.target.value}:x))} style={{ flex:2 }} placeholder="Expense name" />
-              <input value={e.amount} onChange={ev => updateExpense(i, ev.target.value)} type="number" placeholder="$0.00" style={{ flex:1 }} />
+              <input value={e.label} onChange={ev => setExpenses(prev => prev.map((x,xi) => xi===i?{...x,label:ev.target.value}:x))} className="min-w-0" style={{ flex:2 }} placeholder="Expense name" />
+              <input value={e.amount} onChange={ev => updateExpense(i, ev.target.value)} type="number" placeholder="$0.00" className="min-w-0" style={{ flex:1 }} />
               <button onClick={() => removeExpense(i)} style={{ background:'transparent', color:'var(--danger)', padding:'8px', border:'1px solid var(--border)', borderRadius:'var(--radius)', fontSize:16, lineHeight:1 }}>×</button>
             </div>
           ))}
@@ -98,8 +98,8 @@ export default function PnLPage() {
         <div style={{ borderTop:'1px solid var(--border)', marginTop:16, paddingTop:16 }}>
           <p style={{ fontSize:12, color:'var(--muted)', marginBottom:10 }}>Add custom expense</p>
           <div style={{ display:'flex', gap:10 }}>
-            <input value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="Label (e.g. SMS credits)" style={{ flex:2 }} />
-            <input value={customAmount} onChange={e => setCustomAmount(e.target.value)} type="number" placeholder="$0.00" style={{ flex:1 }} />
+            <input value={customLabel} onChange={e => setCustomLabel(e.target.value)} placeholder="Label (e.g. SMS credits)" className="min-w-0" style={{ flex:2 }} />
+            <input value={customAmount} onChange={e => setCustomAmount(e.target.value)} type="number" placeholder="$0.00" className="min-w-0" style={{ flex:1 }} />
             <button onClick={addCustom} style={{ background:'var(--surface2)', border:'1px solid var(--border)', color:'var(--text)', padding:'9px 16px', borderRadius:'var(--radius)', whiteSpace:'nowrap' }}>+ Add</button>
           </div>
         </div>

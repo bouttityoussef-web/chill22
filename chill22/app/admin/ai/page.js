@@ -37,14 +37,14 @@ export default function AIAssistant() {
   }
 
   return (
-    <div style={{ height: 'calc(100vh - 64px)', display: 'flex', flexDirection: 'column', maxWidth: 760 }}>
+    <div className="h-[calc(100dvh-88px)] sm:h-[calc(100dvh-104px)] md:h-[calc(100vh-64px)]" style={{ display: 'flex', flexDirection: 'column', maxWidth: 760 }}>
       <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4 }}>AI Assistant</h1>
       <p style={{ color: 'var(--muted)', fontSize: 13, marginBottom: 20 }}>Natural language commands for managing your IPTV business</p>
 
       {/* Suggestions */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 16 }}>
         {SUGGESTIONS.map(s => (
-          <button key={s} onClick={() => send(s)} style={{
+          <button key={s} onClick={() => send(s)} className="text-left" style={{
             background: 'var(--surface2)', border: '1px solid var(--border)',
             color: 'var(--muted)', padding: '6px 12px', borderRadius: 20, fontSize: 12,
           }}>{s}</button>
@@ -55,12 +55,12 @@ export default function AIAssistant() {
       <div style={{
         flex: 1, overflow: 'auto', background: 'var(--surface)',
         border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
-        padding: 20, display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16,
-      }}>
+        display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 16,
+      }} className="min-h-0 p-3 sm:p-5">
         {messages.map((m, i) => (
           <div key={i} style={{ display: 'flex', justifyContent: m.role === 'user' ? 'flex-end' : 'flex-start' }}>
-            <div style={{
-              maxWidth: '80%', padding: '12px 16px', borderRadius: 12,
+            <div className="min-w-0 break-words" style={{
+              maxWidth: '85%', padding: '12px 16px', borderRadius: 12,
               background: m.role === 'user' ? 'var(--accent)' : 'var(--surface2)',
               color: m.role === 'user' ? '#000' : 'var(--text)',
               fontSize: 14, lineHeight: 1.5, whiteSpace: 'pre-wrap',
@@ -87,6 +87,7 @@ export default function AIAssistant() {
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
           placeholder="Type a command… e.g. 'Send test line to john@email.com'"
+          className="min-w-0"
           style={{ flex: 1 }}
         />
         <button onClick={() => send()} disabled={loading || !input.trim()} style={{

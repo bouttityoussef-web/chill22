@@ -4,12 +4,12 @@ import { createClient } from '../../lib/supabase-browser';
 
 function StatCard({ label, value, sub, accent }) {
   return (
-    <div style={{
+    <div className="min-w-0 p-4 sm:p-6" style={{
       background: 'var(--surface)', border: '1px solid var(--border)',
-      borderRadius: 'var(--radius-lg)', padding: '24px', flex: 1, minWidth: 0
+      borderRadius: 'var(--radius-lg)'
     }}>
       <div style={{ fontSize: 12, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>{label}</div>
-      <div style={{ fontSize: 32, fontWeight: 700, color: accent || 'var(--text)', lineHeight: 1 }}>{value}</div>
+      <div className="break-words text-2xl leading-none sm:text-[32px]" style={{ fontWeight: 700, color: accent || 'var(--text)' }}>{value}</div>
       {sub && <div style={{ fontSize: 12, color: 'var(--muted)', marginTop: 8 }}>{sub}</div>}
     </div>
   );
@@ -49,7 +49,7 @@ export default function AdminOverview() {
         {new Date().toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' })}
       </p>
 
-      <div style={{ display: 'flex', gap: 16, marginBottom: 28, flexWrap: 'wrap' }}>
+      <div className="grid grid-cols-1 gap-3 min-[360px]:grid-cols-2 sm:gap-4 lg:grid-cols-4" style={{ marginBottom: 28 }}>
         <StatCard label="Total Clients" value={stats.clients} />
         <StatCard label="Active Subscriptions" value={stats.activeSubscriptions} accent="var(--accent)" />
         <StatCard label="Orders Today" value={stats.todayOrders} />
@@ -64,7 +64,8 @@ export default function AdminOverview() {
         {recentOrders.length === 0 ? (
           <div style={{ padding: 32, color: 'var(--muted)', textAlign: 'center', fontSize: 13 }}>No orders yet</div>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <div className="overflow-x-auto">
+          <table className="min-w-[600px]" style={{ width: '100%', borderCollapse: 'collapse' }}>
             <thead>
               <tr style={{ background: 'var(--surface2)' }}>
                 {['Client', 'Plan', 'Amount', 'Status', 'Date'].map(h => (
@@ -95,6 +96,7 @@ export default function AdminOverview() {
               ))}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>

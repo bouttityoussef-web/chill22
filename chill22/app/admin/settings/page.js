@@ -21,7 +21,7 @@ export default function SettingsPage() {
       <h1 style={{ fontSize:22, fontWeight:700, marginBottom:4 }}>Settings</h1>
       <p style={{ color:'var(--muted)', fontSize:13, marginBottom:28 }}>Configure your panel host URLs</p>
 
-      <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', padding:24 }}>
+      <div className="p-4 sm:p-6" style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)' }}>
         <h3 style={{ fontSize:15, fontWeight:600, marginBottom:4 }}>Host Configuration</h3>
         <p style={{ color:'var(--muted)', fontSize:12, marginBottom:20 }}>Changing these updates every client dashboard instantly — no need to re-email clients.</p>
         <div style={{ display:'flex', flexDirection:'column', gap:14 }}>

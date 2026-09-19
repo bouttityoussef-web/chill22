@@ -51,7 +51,7 @@ export default function OrdersPage() {
 
   return (
     <div>
-      <div style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24 }}>
+      <div className="gap-3" style={{ display:'flex', justifyContent:'space-between', alignItems:'flex-start', marginBottom:24 }}>
         <div>
           <h1 style={{ fontSize:22, fontWeight:700, marginBottom:4 }}>Orders</h1>
           <p style={{ color:'var(--muted)', fontSize:13 }}>
@@ -60,20 +60,20 @@ export default function OrdersPage() {
             Showing: <span style={{ color:'var(--accent2)', fontWeight:600 }}>${totalRevenue.toFixed(2)}</span>
           </p>
         </div>
-        <button onClick={() => setShowAdd(!showAdd)} style={{ background:'var(--accent)', color:'#000', fontWeight:700, padding:'10px 18px', borderRadius:'var(--radius)' }}>+ Add Order</button>
+        <button onClick={() => setShowAdd(!showAdd)} className="shrink-0" style={{ background:'var(--accent)', color:'#000', fontWeight:700, padding:'10px 18px', borderRadius:'var(--radius)' }}>+ Add Order</button>
       </div>
 
       {/* Webhook URL info */}
       <div style={{ background:'#58a6ff11', border:'1px solid #58a6ff33', borderRadius:'var(--radius)', padding:'12px 16px', marginBottom:20, fontSize:13 }}>
         <span style={{ color:'var(--accent2)', fontWeight:600 }}>⚡ FlujiPay Webhook URL: </span>
-        <code style={{ color:'var(--text)', fontSize:12 }}>{typeof window !== 'undefined' ? window.location.origin : ''}/api/webhooks/flujipay</code>
+        <code className="break-all" style={{ color:'var(--text)', fontSize:12 }}>{typeof window !== 'undefined' ? window.location.origin : ''}/api/webhooks/flujipay</code>
         <span style={{ color:'var(--muted)', marginLeft:8 }}>— Add this in FlujiPay → Developers → Webhooks</span>
       </div>
 
       {showAdd && (
-        <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', padding:24, marginBottom:24 }}>
+        <div className="p-4 sm:p-6" style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', marginBottom:24 }}>
           <h3 style={{ marginBottom:16, fontSize:15 }}>Record Manual Order</h3>
-          <div style={{ display:'grid', gridTemplateColumns:'1fr 1fr', gap:12 }}>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
             <input placeholder="Client email" value={form.client_email} onChange={e => setForm({...form, client_email: e.target.value})} />
             <input placeholder="Plan label (e.g. 1 Year Premium)" value={form.plan_label} onChange={e => setForm({...form, plan_label: e.target.value})} />
             <input placeholder="Amount (USD)" type="number" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} />
@@ -81,16 +81,16 @@ export default function OrdersPage() {
               <option value="paid">Paid</option>
               <option value="pending">Pending</option>
             </select>
-            <input placeholder="Notes (optional)" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} style={{ gridColumn:'1/-1' }} />
+            <input placeholder="Notes (optional)" value={form.notes} onChange={e => setForm({...form, notes: e.target.value})} className="col-span-full" />
           </div>
-          <div style={{ display:'flex', gap:10, marginTop:14 }}>
+          <div className="flex-wrap" style={{ display:'flex', gap:10, marginTop:14 }}>
             <button onClick={handleAdd} disabled={saving} style={{ background:'var(--accent)', color:'#000', fontWeight:700, padding:'10px 20px', borderRadius:'var(--radius)' }}>{saving ? 'Saving…' : 'Save Order'}</button>
             <button onClick={() => setShowAdd(false)} style={{ background:'var(--surface2)', border:'1px solid var(--border)', color:'var(--muted)', padding:'10px 20px', borderRadius:'var(--radius)' }}>Cancel</button>
           </div>
         </div>
       )}
 
-      <div style={{ display:'flex', gap:8, marginBottom:16 }}>
+      <div className="flex-wrap" style={{ display:'flex', gap:8, marginBottom:16 }}>
         {['all','today','paid','pending'].map(f => (
           <button key={f} onClick={() => setFilter(f)} style={{ padding:'6px 14px', borderRadius:20, fontSize:12, fontWeight:600, background: filter===f?'var(--accent)':'var(--surface2)', color: filter===f?'#000':'var(--muted)', border:'1px solid var(--border)' }}>
             {f.charAt(0).toUpperCase()+f.slice(1)} {f==='today' ? `(${todayOrders.length})` : ''}
@@ -100,7 +100,8 @@ export default function OrdersPage() {
 
       <div style={{ background:'var(--surface)', border:'1px solid var(--border)', borderRadius:'var(--radius-lg)', overflow:'hidden' }}>
         {loading ? <div style={{ padding:32, textAlign:'center', color:'var(--muted)' }}>Loading…</div> : (
-          <table style={{ width:'100%', borderCollapse:'collapse' }}>
+          <div className="overflow-x-auto">
+          <table className="min-w-[720px]" style={{ width:'100%', borderCollapse:'collapse' }}>
             <thead><tr style={{ background:'var(--surface2)' }}>
               {['Customer','Plan','Amount','Status','Phone','Date'].map(h => (
                 <th key={h} style={{ padding:'10px 20px', textAlign:'left', fontSize:11, color:'var(--muted)', textTransform:'uppercase', letterSpacing:'0.05em', fontWeight:600 }}>{h}</th>
@@ -125,6 +126,7 @@ export default function OrdersPage() {
               {filtered.length===0 && <tr><td colSpan={6} style={{ padding:32, textAlign:'center', color:'var(--muted)' }}>No orders yet</td></tr>}
             </tbody>
           </table>
+          </div>
         )}
       </div>
     </div>
