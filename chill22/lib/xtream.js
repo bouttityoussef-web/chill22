@@ -68,31 +68,7 @@ export async function createM3ULine({ months, sub = 12, pack = SUBSCRIPTION_PACK
     throw new Error(`Could not extract username. Response: ${JSON.stringify(item)}`);
   }
 
-  // Not every panel documents the id field; take whichever one it returns.
-  const userId = item.user_id ?? item.id ?? item.line_id ?? null;
-
-  return { username, password, m3uUrl, userId, raw: item };
-}
-
-// Generic panel call for actions we don't have a dedicated helper for.
-// Never throws: returns { action, params, httpStatus, body } or { action, params, error }
-// so a failing optional call can't break line creation.
-export async function panelRequest(action, params = {}, label = action) {
-  const baseUrl = process.env.XTREAM_API_BASE_URL;
-  const apiKey = process.env.XTREAM_RESELLER_API_KEY;
-
-  const query = new URLSearchParams({ action, api_key: apiKey });
-  for (const [k, v] of Object.entries(params)) query.append(k, String(v));
-
-  try {
-    const response = await fetch(`${baseUrl}?${query.toString()}`, { signal: AbortSignal.timeout(8000) });
-    const text = await response.text();
-    let body;
-    try { body = JSON.parse(text); } catch { body = text; }
-    return { action, label, params, httpStatus: response.status, body };
-  } catch (err) {
-    return { action, label, params, error: err.message };
-  }
+  return { username, password, m3uUrl };
 }
 
 export async function getDeviceInfo({ username, password }) {

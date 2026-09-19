@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../lib/supabase-admin';
-import { createM3ULine, panelRequest, SUBSCRIPTION_PACK, PLAN_LABEL_BY_MONTHS } from '../../../../lib/xtream';
+import { createM3ULine, SUBSCRIPTION_PACK, PLAN_LABEL_BY_MONTHS } from '../../../../lib/xtream';
 import { sendCredentialsEmail } from '../../../../lib/email';
 import { requireAdmin } from '../../../../lib/require-admin';
 
@@ -74,94 +74,13 @@ Enjoy your service! 🎬✨
 // (so credentials and the long template don't get re-sent every turn).
 const TEMPLATE_LABEL = '📋 Copy Template';
 
-// Raw panel responses are shown in the chat until the VPN parameters are confirmed.
-// Set PANEL_DEBUG=0 in the environment to hide them.
-const SHOW_PANEL_DEBUG = process.env.PANEL_DEBUG !== '0';
-
-function buildClientMessage({ m3uUrl, username, password, plan, altUrl }) {
+function buildClientMessage({ m3uUrl, username, password, plan }) {
   // Function replacers so "$&"-style sequences in a password aren't interpreted.
-  const m3uBlock = (m3uUrl || '⚠️ (panel did not return an M3U URL)')
-    + (altUrl ? `\n🌐 **VPS M3U URL (alternative):** ${altUrl}` : '');
   return CLIENT_TEMPLATE
-    .replaceAll('{M3U_URL}', () => m3uBlock)
+    .replaceAll('{M3U_URL}', () => m3uUrl || '⚠️ (panel did not return an M3U URL)')
     .replaceAll('{USERNAME}', () => username)
     .replaceAll('{PASSWORD}', () => password || '—')
     .replaceAll('{PLAN}', () => plan);
-}
-
-// Panel error replies look like { status: 'error', ... } (see createM3ULine).
-function looksOk(call) {
-  if (call.error || call.httpStatus >= 400) return false;
-  const first = Array.isArray(call.body) ? call.body[0] : call.body;
-  if (first && typeof first === 'object' && first.status === 'error') return false;
-  return !(typeof first === 'string' && /error|invalid|unknown|not found/i.test(first));
-}
-
-// Only accept a URL as an "alternative connection" if it carries this account's own
-// username and password, so we never put an unrelated server URL in a client message.
-function findAlternativeUrl(value, line) {
-  if (typeof value === 'string') {
-    const isUrl = /^https?:\/\//i.test(value);
-    const forThisAccount = value.includes(line.username) && (!line.password || value.includes(line.password));
-    return isUrl && forThisAccount && value !== line.m3uUrl ? value : null;
-  }
-  if (value && typeof value === 'object') {
-    for (const v of Object.values(value)) {
-      const hit = findAlternativeUrl(v, line);
-      if (hit) return hit;
-    }
-  }
-  return null;
-}
-
-// Best-effort: look up stream/server options for the new line and try to switch it to VPN mode.
-// The panel's exact action names/params are unconfirmed, so every response is collected for display.
-async function tryVpnOptions(line) {
-  const calls = [];
-  const lookup = { username: line.username, password: line.password, ...(line.userId != null && { user_id: line.userId }) };
-
-  const [servers, lines] = await Promise.all([
-    panelRequest('get_servers', {}, 'get_servers'),
-    panelRequest('get_user_lines', lookup, 'get_user_lines'),
-  ]);
-  calls.push(servers, lines);
-
-  let altUrl = findAlternativeUrl(lines.body, line);
-  let note = '';
-
-  if (line.userId == null) {
-    note = 'No user id in the create response, so edit_user / set_vpn were skipped.';
-  } else {
-    let edit = await panelRequest('edit_user', { user_id: line.userId, vpn: 1 }, 'edit_user');
-    calls.push(edit);
-    if (!looksOk(edit)) {
-      edit = await panelRequest('set_vpn', { user_id: line.userId, vpn: 1 }, 'set_vpn');
-      calls.push(edit);
-    }
-    note = looksOk(edit)
-      ? `VPN mode request accepted via "${edit.action}" — confirm the line still works before sending.`
-      : 'Neither edit_user nor set_vpn was accepted (see responses).';
-
-    const after = await panelRequest('get_user_lines', lookup, 'get_user_lines (after VPN)');
-    calls.push(after);
-    altUrl = altUrl || findAlternativeUrl(after.body, line);
-  }
-
-  return { calls, altUrl, note };
-}
-
-function formatPanelDebug({ calls, note }) {
-  const apiKey = process.env.XTREAM_RESELLER_API_KEY;
-  const redact = (s) => (apiKey ? s.split(apiKey).join('[api_key]') : s);
-  const blocks = calls.map((c) => {
-    const { password, ...params } = c.params || {};
-    const head = `▸ ${c.label} ${JSON.stringify(params)}`;
-    if (c.error) return `${head}\n  request failed: ${c.error}`;
-    const body = typeof c.body === 'string' ? c.body : JSON.stringify(c.body, null, 2);
-    const shown = redact(body).slice(0, 1200);
-    return `${head} → HTTP ${c.httpStatus}\n${shown}${body.length > 1200 ? '\n… (truncated)' : ''}`;
-  });
-  return `\n\n🔧 Panel responses (debug)\n${note}\n\n${blocks.join('\n\n')}`;
 }
 
 export async function POST(request) {
@@ -296,23 +215,14 @@ IMPORTANT:
               }
             }
 
-            let vpn = { calls: [], altUrl: null, note: '' };
-            try {
-              vpn = await tryVpnOptions(line);
-            } catch (e) {
-              vpn.note = `VPN lookup failed: ${e.message}`;
-            }
-
             const clientMessage = buildClientMessage({
               m3uUrl: line.m3uUrl,
               username: line.username,
               password: line.password,
               plan,
-              altUrl: vpn.altUrl,
             });
 
             actionResult = `\n\n${notes.join('\n')}\n\n${TEMPLATE_LABEL}\n${clientMessage}`;
-            if (SHOW_PANEL_DEBUG) actionResult += formatPanelDebug(vpn);
           }
         }
 
