@@ -1,16 +1,10 @@
 import { NextResponse } from 'next/server';
 import { createAdminClient } from '../../../../lib/supabase-admin';
-import { createM3ULine, panelRequest } from '../../../../lib/xtream';
+import { createM3ULine, panelRequest, SUBSCRIPTION_PACK, PLAN_LABEL_BY_MONTHS } from '../../../../lib/xtream';
 import { sendCredentialsEmail } from '../../../../lib/email';
 import { requireAdmin } from '../../../../lib/require-admin';
 
 export const runtime = 'nodejs';
-
-// Panel "sub" codes -> plan label shown to the client.
-const PLAN_LABELS = { 5: '1 Day Trial', 1: '1 Month', 3: '3 Months', 12: '1 Year' };
-const DEFAULT_SUB = { create_trial: 5, create_subscription: 12 };
-// Reseller pack used for every line created here (trials included) — change it in one place.
-const PANEL_PACK = 152;
 
 // Client-facing message the admin copies and sends. Placeholders: {M3U_URL} {USERNAME} {PASSWORD} {PLAN}
 const CLIENT_TEMPLATE = `🎉 **Your ProMax IPTV Subscription Is Active!**
@@ -183,21 +177,25 @@ export async function POST(request) {
 You help the admin manage clients, subscriptions, and communications.
 
 When you need to perform an action, output ONLY a JSON block on its own line like this:
-ACTION:{"action":"create_trial","sub":5}
+ACTION:{"action":"create_sub","months":1}
 
 Available actions:
-- Create a trial / test line: ACTION:{"action":"create_trial","sub":5}
-- Create a paid subscription line: ACTION:{"action":"create_subscription","sub":1}
+- Create a subscription line: ACTION:{"action":"create_sub","months":<1|3|6|12>}
 - Check client status: ACTION:{"action":"check_status","email":"..."}
 
-Plan codes for "sub": 5 = 1 day trial, 1 = 1 month, 3 = 3 months, 12 = 1 year.
-Add "email" and/or "name" to a create action ONLY if the admin actually gave them.
+Choosing "months" for create_sub:
+- "create 1 month" / "1 month account"  -> ACTION:{"action":"create_sub","months":1}
+- "create 3 months"                      -> ACTION:{"action":"create_sub","months":3}
+- "create 6 months"                      -> ACTION:{"action":"create_sub","months":6}
+- "create 12 months" / "1 year"          -> ACTION:{"action":"create_sub","months":12}
+Only 1, 3, 6 and 12 months exist. There are no trial or test lines.
 
 IMPORTANT:
 - Output the ACTION: line FIRST, then ONE short friendly sentence
-- Create immediately. NEVER ask for a name or email before creating a line — they are optional
-- A test/trial line is always sub 5 unless the admin says otherwise
-- For a paid subscription use the duration the admin states; only if they give no duration, ask which plan
+- Create immediately. NEVER ask for a name or email before creating a line
+- Add "email" and/or "name" to create_sub ONLY if the admin actually gave them
+- If the admin asks for an account but gives no duration, ask which plan (1, 3, 6 or 12 months)
+- If the admin asks for a trial or test line, tell them only 1, 3, 6 and 12 month subscriptions are available
 - The system attaches the credentials and the client message after your reply. Never write credentials or the client message yourself
 - Never show raw JSON in your conversational reply
 - check_status needs an email; ask for it only for that action
@@ -232,20 +230,19 @@ IMPORTANT:
       try {
         const action = JSON.parse(actionMatch[1]);
 
-        if (action.action === 'create_trial' || action.action === 'create_subscription') {
-          const sub = Number(action.sub) || DEFAULT_SUB[action.action];
-          const plan = PLAN_LABELS[sub];
+        if (action.action === 'create_sub') {
+          const months = Number(action.months);
+          const plan = PLAN_LABEL_BY_MONTHS[months];
 
           if (!plan) {
-            const supported = Object.entries(PLAN_LABELS).map(([code, label]) => `${code} = ${label}`).join(', ');
-            actionResult = `\n\n❌ Unsupported plan code (sub=${action.sub}). Supported: ${supported}`;
+            actionResult = `\n\n❌ Unsupported duration (months=${action.months}). Supported: 1, 3, 6 or 12 months.`;
           } else {
             const email = typeof action.email === 'string' ? action.email.trim() : '';
             const name = typeof action.name === 'string' ? action.name.trim() : '';
 
             // Create on the panel first, right away — email/name are optional.
-            // (sub picks the duration)
-            const line = await createM3ULine({ pack: PANEL_PACK, sub, note: name });
+            // (months is mapped to the panel's sub value inside createM3ULine)
+            const line = await createM3ULine({ months, pack: SUBSCRIPTION_PACK, note: name });
             const notes = [`✅ Done! ${plan} line created`];
 
             // Saving to the database / emailing is best-effort: the credentials below must reach
@@ -274,7 +271,7 @@ IMPORTANT:
                     username: line.username,
                     password: line.password,
                     m3u_url: line.m3uUrl,
-                    package_id: String(PANEL_PACK),
+                    package_id: String(SUBSCRIPTION_PACK),
                     status: 'active',
                   });
                   if (clientError || subError) {

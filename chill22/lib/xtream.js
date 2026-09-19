@@ -1,4 +1,20 @@
-export async function createM3ULine({ sub = 12, pack = 64313, note = '', country = '' }) {
+// Reseller pack used for every subscription line.
+export const SUBSCRIPTION_PACK = 64313;
+
+// Subscription length in months -> the panel's "sub" value, and the label shown to clients.
+export const SUB_BY_MONTHS = { 1: 1, 3: 3, 6: 6, 12: 12 };
+export const PLAN_LABEL_BY_MONTHS = { 1: '1 Month', 3: '3 Months', 6: '6 Months', 12: '1 Year' };
+
+// Pass `months` (1 / 3 / 6 / 12) to pick the length; it is mapped to the panel's sub value.
+// `sub` is still accepted for callers that already have a raw panel value (e.g. create-client).
+export async function createM3ULine({ months, sub = 12, pack = SUBSCRIPTION_PACK, note = '', country = '' }) {
+  if (months !== undefined) {
+    if (!Object.hasOwn(SUB_BY_MONTHS, months)) {
+      throw new Error(`Unsupported duration: ${months} months (use 1, 3, 6 or 12)`);
+    }
+    sub = SUB_BY_MONTHS[months];
+  }
+
   const baseUrl = process.env.XTREAM_API_BASE_URL;
   const apiKey = process.env.XTREAM_RESELLER_API_KEY;
 

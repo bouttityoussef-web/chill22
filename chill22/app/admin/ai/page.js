@@ -2,8 +2,10 @@
 import { useState, useRef, useEffect } from 'react';
 
 const SUGGESTIONS = [
-  'Send test line to client@email.com',
-  'Create a new subscription for John, email john@gmail.com, package 16',
+  'Create 1 month',
+  'Create 3 months',
+  'Create 6 months',
+  'Create 12 months',
   'Check account status for client@email.com',
   'Extend subscription for client@email.com by 30 days',
   'Send email to client@email.com with their credentials',
@@ -11,7 +13,7 @@ const SUGGESTIONS = [
 
 export default function AIAssistant() {
   const [messages, setMessages] = useState([
-    { role: 'assistant', content: "Hi! I'm your ProMax AI assistant. I can help you manage clients, send test lines, create subscriptions, check account statuses, and send emails. What would you like to do?" }
+    { role: 'assistant', content: "Hi! I'm your ProMax AI assistant. I can create 1, 3, 6 or 12 month subscriptions, check account statuses, and more. What would you like to do?" }
   ]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -86,7 +88,7 @@ export default function AIAssistant() {
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => e.key === 'Enter' && !e.shiftKey && send()}
-          placeholder="Type a command… e.g. 'Send test line to john@email.com'"
+          placeholder="Type a command… e.g. 'Create 1 month'"
           className="min-w-0"
           style={{ flex: 1 }}
         />
